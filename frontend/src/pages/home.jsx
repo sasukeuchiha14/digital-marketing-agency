@@ -1,7 +1,59 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
+  // State for testimonials
+  const [testimonials, setTestimonials] = useState([]);
+  const [testimonialsLoading, setTestimonialsLoading] = useState(true);
+  const [testimonialsError, setTestimonialsError] = useState(null);
+
+  // Fetch testimonials from API
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        setTestimonialsLoading(true);
+        // Replace with your API endpoint
+        const response = await fetch('http://localhost:5000/api/clients-responses');
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch testimonials');
+        }
+        
+        const data = await response.json();
+        setTestimonials(data.data);
+        setTestimonialsError(null);
+      } catch (error) {
+        // Handle error and set error state
+        // Log error to console for debugging
+        console.error('Error fetching testimonials:', error);
+        setTestimonialsError('Failed to load testimonials');
+        // Fallback data in case API fails
+        setTestimonials([
+          {
+            quote: "PixelPerfect transformed our online presence completely. Our leads have increased by 200% since we started working with them.",
+            author: "Sarah Johnson",
+            company: "TechSolutions Inc."
+          },
+          {
+            quote: "The team's expertise in SEO and content marketing helped us rank #1 for our key industry terms. Highly recommended!",
+            author: "Michael Chen",
+            company: "GrowthHub"
+          },
+          {
+            quote: "Professional, responsive, and results-driven. Our social media engagement has never been higher.",
+            author: "Emma Thompson",
+            company: "Retail Innovations"
+          }
+        ]);
+      } finally {
+        // Set loading state to false regardless of success or failure
+        setTestimonialsLoading(false);
+      }
+    };
+    
+    fetchTestimonials();
+  }, []);
+
   return (
     <div className="flex flex-col gap-16 py-8">
       {/* Hero Section */}
@@ -76,40 +128,33 @@ const Home = () => {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl font-bold text-center mb-12">What Our Clients Say</h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                quote: "PixelPerfect transformed our online presence completely. Our leads have increased by 200% since we started working with them.",
-                author: "Sarah Johnson",
-                company: "TechSolutions Inc."
-              },
-              {
-                quote: "The team's expertise in SEO and content marketing helped us rank #1 for our key industry terms. Highly recommended!",
-                author: "Michael Chen",
-                company: "GrowthHub"
-              },
-              {
-                quote: "Professional, responsive, and results-driven. Our social media engagement has never been higher.",
-                author: "Emma Thompson",
-                company: "Retail Innovations"
-              }
-            ].map((testimonial, index) => (
+          {testimonialsError && (
+            <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-6 text-center">
+              {testimonialsError}
+            </div>
+          )}
 
-              // Design for each testimonial
-              <div key={index} className="bg-white p-6 rounded-lg shadow">
-                <p className="italic text-gray-600 mb-4">"{testimonial.quote}"</p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-gray-300 rounded-full mr-3"></div>
-                  <div>
-                    <p className="font-medium">{testimonial.author}</p>
-                    <p className="text-sm text-gray-500">{testimonial.company}</p>
+          {testimonialsLoading ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial, index) => (
+                // Design for each testimonial
+                <div key={index} className="bg-white p-6 rounded-lg shadow">
+                  <p className="italic text-gray-600 mb-4">"{testimonial.quote}"</p>
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-gray-300 rounded-full mr-3"></div>
+                    <div>
+                      <p className="font-medium">{testimonial.author}</p>
+                      <p className="text-sm text-gray-500">{testimonial.company}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-            ))}
-          </div>
-
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

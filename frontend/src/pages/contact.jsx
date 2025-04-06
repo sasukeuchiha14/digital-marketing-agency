@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Contact = () => {
     // State for form fields
@@ -19,7 +19,59 @@ const Contact = () => {
         message: ''
     });
 
+    // State for loading status
     const [isLoading, setIsLoading] = useState(false);
+    
+    // State for FAQs
+    const [faqs, setFaqs] = useState([]);
+    const [faqsLoading, setFaqsLoading] = useState(true);
+    const [faqsError, setFaqsError] = useState(null);
+
+    // Fetch FAQs from the API
+    useEffect(() => {
+        const fetchFAQs = async () => {
+            try {
+                setFaqsLoading(true);
+                // Fetch FAQs from the API
+                // Replace with your actual API endpoint
+                const response = await fetch('http://localhost:5000/api/frequently-asked-questions');
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch FAQs');
+                }
+                
+                const data = await response.json();
+                setFaqs(data.data);
+                setFaqsError(null);
+            } catch (error) {
+                console.error('Error fetching FAQs:', error);
+                setFaqsError('Failed to load FAQs. Please refresh the page.');
+                // Fallback data in case API fails
+                setFaqs([
+                    {
+                        question: "How quickly can you start working on my project?",
+                        answer: "We typically begin new projects within 1-2 weeks of signing the contract. For urgent needs, we also offer expedited services."
+                    },
+                    {
+                        question: "Do you work with small businesses?",
+                        answer: "Absolutely! We have tailored packages designed specifically for small businesses and startups with growth-focused strategies."
+                    },
+                    {
+                        question: "What makes your agency different?",
+                        answer: "Our data-driven approach, transparent reporting, and dedicated account managers ensure you get measurable results and personalized service."
+                    },
+                    {
+                        question: "How long does it take to see results?",
+                        answer: "While some tactics yield quick wins, digital marketing is typically a long-term investment. Most clients see meaningful results within 3-6 months."
+                    }
+                ]);
+            } finally {
+                setFaqsLoading(false);
+            }
+        };
+        
+        fetchFAQs();
+    }, []);
 
     // Handle form field changes
     const handleChange = (e) => {
@@ -44,8 +96,8 @@ const Contact = () => {
         // Validate the form data (basic validation)
         try {
             // Send the form data to the server
-            const response = await fetch('http://localhost:5000/api/mail', {
-                // Replace with your actual API endpoint
+            // Replace with your actual API endpoint
+            const response = await fetch('http://localhost:5000/api/message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -329,31 +381,27 @@ const Contact = () => {
             {/* FAQ Section */}
             <section className="mb-12">
                 <h2 className="text-2xl font-bold mb-6">Frequently Asked Questions</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[
-                        {
-                            question: "How quickly can you start working on my project?",
-                            answer: "We typically begin new projects within 1-2 weeks of signing the contract. For urgent needs, we also offer expedited services."
-                        },
-                        {
-                            question: "Do you work with small businesses?",
-                            answer: "Absolutely! We have tailored packages designed specifically for small businesses and startups with growth-focused strategies."
-                        },
-                        {
-                            question: "What makes your agency different?",
-                            answer: "Our data-driven approach, transparent reporting, and dedicated account managers ensure you get measurable results and personalized service."
-                        },
-                        {
-                            question: "How long does it take to see results?",
-                            answer: "While some tactics yield quick wins, digital marketing is typically a long-term investment. Most clients see meaningful results within 3-6 months."
-                        }
-                    ].map((faq, index) => (
-                        <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 className="font-bold text-lg mb-2">{faq.question}</h3>
-                            <p className="text-gray-600">{faq.answer}</p>
-                        </div>
-                    ))}
-                </div>
+                
+                {faqsError && (
+                    <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-6">
+                        {faqsError}
+                    </div>
+                )}
+                
+                {faqsLoading ? (
+                    <div className="flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {faqs.map((faq, index) => (
+                            <div key={index} className="bg-white p-6 rounded-lg shadow-sm">
+                                <h3 className="font-bold text-lg mb-2">{faq.question}</h3>
+                                <p className="text-gray-600">{faq.answer}</p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </section>
         </div>
     );
